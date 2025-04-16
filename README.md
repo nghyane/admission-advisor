@@ -17,8 +17,19 @@ This is an AI agent designed to provide admission advising services for prospect
 1. Clone the repository
 2. Install dependencies:
    ```
-   pip install -r requirements.txt
+   gcloud auth login
+gcloud services enable aiplatform.googleapis.com
    ```
+   
+   if you have not installed poetry before then run `pip install poetry` first. the you can create your virtual environment and install all dependencies using:
+   ```
+   poetry install
+   ```
+   To activate the virtual environment run:
+   ```
+   poetry env activate
+   ```
+
 3. Set up your environment variables in the `.env` file:
    ```
    GOOGLE_API_KEY=your_api_key
