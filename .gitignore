@@ -54,3 +54,6 @@ logs/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# windsurf rules
+.windsurfrules
