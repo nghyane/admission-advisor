@@ -1,0 +1,28 @@
+# Theo's Commit Rules
+
+## Commit Message Format
+type(scope): subject
+
+## Types
+- feat: A new feature
+- fix: A bug fix
+- docs: Documentation only changes
+- style: Changes that do not affect the meaning of the code
+- refactor: A code change that neither fixes a bug nor adds a feature
+- perf: A code change that improves performance
+- test: Adding missing tests or correcting existing tests
+- chore: Changes to the build process or auxiliary tools
+
+## Scope
+The scope should be the name of the module affected (e.g., admission, tools, entities)
+
+## Subject
+- Use the imperative, present tense: "change" not "changed" nor "changes"
+- Don't capitalize the first letter
+- No dot (.) at the end
+
+## Examples
+- feat(admission): add admission requirements validation
+- fix(tools): resolve issue with tuition calculation
+- docs(readme): update installation instructions
+- refactor(entities): simplify student data model
