@@ -21,15 +21,15 @@ This is an AI agent designed to provide admission advising services for prospect
    gcloud services enable aiplatform.googleapis.com
    ```
    
-   if you have not installed poetry before then run `pip install poetry` first. the you can create your virtual environment and install all dependencies using:
+   If you have not installed Poetry before, run `pip install poetry` first. Then, you can create your virtual environment and install all dependencies using:
 
    ```
    poetry install
    ```
-   To activate the virtual environment run:
+   To activate the virtual environment, run:
 
    ```
-poetry env activate
+   poetry env activate
    ```
 
 3. Set up your environment variables in the `.env` file:
