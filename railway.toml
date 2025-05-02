@@ -9,5 +9,5 @@ healthcheckTimeout = 300
 restartPolicyType = "on-failure"
 restartPolicyMaxRetries = 10
 
-[environments]
-GOOGLE_SESSION_DB_URL="${{ Postgres.DATABASE_URL }}"
+[variables]
+GOOGLE_SESSION_DB_URL = "${{ Postgres.DATABASE_URL }}"
