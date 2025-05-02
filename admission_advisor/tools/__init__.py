@@ -13,3 +13,27 @@
 # limitations under the License.
 
 """Tools package for the Admission Advisor Agent."""
+
+from .tools import (
+    get_majors_list,
+    store_student_profile,
+    get_user_profile,
+    get_campuses,
+    get_major_detail,
+    get_admission_methods,
+    get_dormitory_by_campus,
+    get_scholarships_list,
+    debug_invocation_context,   
+)
+
+__all__ = [
+    "get_majors_list",
+    "store_student_profile",
+    "get_user_profile",
+    "get_campuses",
+    "get_major_detail",
+    "get_admission_methods",
+    "get_dormitory_by_campus",
+    "get_scholarships_list",    
+    "debug_invocation_context",
+]

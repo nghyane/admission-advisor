@@ -22,7 +22,6 @@ from google.adk.models import LlmRequest
 from typing import Any, Dict
 from google.adk.tools import BaseTool
 from google.adk.agents.invocation_context import InvocationContext
-from admission_advisor.entities.student import Student
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -43,8 +42,8 @@ def rate_limit_callback(
     """
     for content in llm_request.contents:
         for part in content.parts:
-            if part.text=="":
-                part.text=" "
+            if part.text == "":
+                part.text = " "
 
     now = time.time()
     if "timer_start" not in callback_context.state:
@@ -80,37 +79,25 @@ def rate_limit_callback(
     return
 
 
-def lowercase_value(value):
-    """Make dictionary lowercase"""
-    if isinstance(value, dict):
-        return (dict(k, lowercase_value(v)) for k, v in value.items())
-    elif isinstance(value, str):
-        return value.lower()
-    elif isinstance(value, (list, set, tuple)):
-        tp = type(value)
-        return tp(lowercase_value(i) for i in value)
-    else:
-        return value
-
-
-# Callback Methods
 def before_tool(
     tool: BaseTool, args: Dict[str, Any], tool_context: CallbackContext
 ):
-    # Make sure all values that the agent is sending to tools are lowercase
-    lowercase_value(args)
+    """Callback được gọi trước khi một tool được thực thi.
+    
+    Args:
+        tool: Tool đang được gọi
+        args: Các tham số được truyền vào tool
+        tool_context: Context của callback
+    """
+    logger.debug(f"Tool đang được gọi: {tool.name} với tham số: {args}")
+    return None
 
-    # Check for the next tool call and then act accordingly.
-    # Example logic based on the tool being called.
-    if tool.name == "get_admission_methods":
-        return None
 
-
-# Checking that the student profile is loaded as state
 def before_agent(callback_context: InvocationContext):
-    if "student_profile" not in callback_context.state:
-        callback_context.state["student_profile"] = Student.get_student(
-            "123"
-        ).to_json()
-
-    # logger.info(callback_context.state["student_profile"])
+    """Callback được gọi trước khi agent xử lý một yêu cầu.
+    
+    Args:
+        callback_context: Context của callback
+    """
+    logger.debug("Agent đang xử lý yêu cầu mới")
+    return None

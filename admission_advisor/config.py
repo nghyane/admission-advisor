@@ -19,7 +19,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import BaseModel, Field
 
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -43,6 +43,8 @@ class Config(BaseSettings):
     agent_settings: AgentModel = Field(default=AgentModel())
     app_name: str = "admission_advisor_app"
     CLOUD_PROJECT: str = Field(default="my_project")
-    CLOUD_LOCATION: str = Field(default="us-central1")
+    CLOUD_LOCATION: str = Field(default="asia-east1")
     GENAI_USE_VERTEXAI: str = Field(default="1")
+    API_BASE_URL: str = Field(default="http://localhost:4000")
     API_KEY: str | None = Field(default="")
+    SESSION_DB_URL: str = Field(default="sqlite:///sessions.db")

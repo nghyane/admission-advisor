@@ -13,158 +13,56 @@
 # limitations under the License.
 """Student entity module."""
 
-from typing import List, Dict, Optional
+from typing import Optional, Dict
 from pydantic import BaseModel, Field, ConfigDict
-
-
-class AcademicRecord(BaseModel):
-    """
-    Represents a student's academic record.
-    """
-    institution: str
-    degree: str
-    major: str
-    gpa: float
-    graduation_date: str
-    model_config = ConfigDict(from_attributes=True)
-
-
-class TestScore(BaseModel):
-    """
-    Represents a standardized test score.
-    """
-    test_name: str
-    score: float
-    date_taken: str
-    model_config = ConfigDict(from_attributes=True)
-
-
-class ContactInformation(BaseModel):
-    """
-    Represents a student's contact information.
-    """
-    email: str
-    phone_number: str
-    address: str
-    city: str
-    state: str
-    zip_code: str
-    country: str
-    model_config = ConfigDict(from_attributes=True)
-
-
-class AcademicInterest(BaseModel):
-    """
-    Represents a student's academic interests.
-    """
-    field_of_study: str
-    program_level: str  # undergraduate, graduate, etc.
-    specific_programs: List[str]
-    career_goals: List[str]
-    model_config = ConfigDict(from_attributes=True)
-
-
-class ApplicationStatus(BaseModel):
-    """
-    Represents the status of a student's application.
-    """
-    application_id: str
-    program_id: str
-    submission_date: str
-    status: str  # submitted, under review, accepted, rejected, etc.
-    missing_documents: List[str] = []
-    model_config = ConfigDict(from_attributes=True)
 
 
 class Student(BaseModel):
     """
-    Represents a prospective student.
+    Đại diện cho một sinh viên tiềm năng với thông tin tối giản.
     """
     student_id: str
-    first_name: str
-    last_name: str
-    date_of_birth: str
-    contact_information: ContactInformation
-    academic_records: List[AcademicRecord]
-    test_scores: List[TestScore]
-    academic_interests: AcademicInterest
-    residency_status: str  # in-state, out-of-state, international
-    applications: List[ApplicationStatus] = []
-    scheduled_appointments: Dict = Field(default_factory=dict)
+    name: str
+    email: str
+    phone: str
+    high_school: str
+    school_rank: float = 0.0
+    interests: Dict[str, bool] = Field(default_factory=dict)
     model_config = ConfigDict(from_attributes=True)
 
     def to_json(self) -> str:
         """
-        Converts the Student object to a JSON string.
+        Chuyển đổi đối tượng Student thành chuỗi JSON.
 
         Returns:
-            A JSON string representing the Student object.
+            Chuỗi JSON đại diện cho đối tượng Student.
         """
         return self.model_dump_json(indent=4)
 
     @staticmethod
     def get_student(student_id: str) -> Optional["Student"]:
         """
-        Retrieves a student based on their ID.
+        Lấy thông tin sinh viên dựa trên ID.
 
         Args:
-            student_id: The ID of the student to retrieve.
+            student_id: ID của sinh viên cần lấy thông tin.
 
         Returns:
-            The Student object if found, None otherwise.
+            Đối tượng Student nếu tìm thấy, None nếu không.
         """
-        # In a real application, this would involve a database lookup.
-        # For this example, we'll just return a dummy student.
+        # Trong ứng dụng thực tế, đây sẽ là truy vấn cơ sở dữ liệu.
+        # Trong ví dụ này, chúng ta chỉ trả về một sinh viên mẫu.
         return Student(
             student_id=student_id,
-            first_name="Maria",
-            last_name="Garcia",
-            date_of_birth="2003-05-15",
-            contact_information=ContactInformation(
-                email="maria.garcia@example.com",
-                phone_number="+1-555-123-4567",
-                address="123 College Ave",
-                city="Anytown",
-                state="CA",
-                zip_code="90210",
-                country="USA"
-            ),
-            academic_records=[
-                AcademicRecord(
-                    institution="Anytown High School",
-                    degree="High School Diploma",
-                    major="General Studies",
-                    gpa=3.8,
-                    graduation_date="2023-05-30"
-                )
-            ],
-            test_scores=[
-                TestScore(
-                    test_name="SAT",
-                    score=1350,
-                    date_taken="2022-11-05"
-                ),
-                TestScore(
-                    test_name="ACT",
-                    score=29,
-                    date_taken="2022-10-22"
-                )
-            ],
-            academic_interests=AcademicInterest(
-                field_of_study="Computer Science",
-                program_level="undergraduate",
-                specific_programs=["Computer Science", "Data Science", "Artificial Intelligence"],
-                career_goals=["Software Engineer", "Data Scientist", "AI Researcher"]
-            ),
-            residency_status="in-state",
-            applications=[
-                ApplicationStatus(
-                    application_id="APP-2023-001",
-                    program_id="CS-BS-001",
-                    submission_date="2023-12-15",
-                    status="under review",
-                    missing_documents=["Official Transcript"]
-                )
-            ],
-            scheduled_appointments={}
+            name="Nguyễn Văn A",
+            email="nguyenvana@example.com",
+            phone="0912345678",
+            high_school="THPT Chu Văn An",
+            school_rank=8.5,
+            interests={
+                "technology": True,
+                "business": False,
+                "design": True,
+                "communication": False
+            }
         )

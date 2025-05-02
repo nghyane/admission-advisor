@@ -1,296 +1,381 @@
-from typing import List, Dict, Optional
+from typing import Dict, Optional, Any
+from google.adk.tools import FunctionTool
+from google.adk.tools.tool_context import ToolContext
+from datetime import datetime
+
+# Import client API trực tiếp
+from ..api.client import default_client
 
 
-def get_majors_list(campus: Optional[str] = None) -> List[dict]:
+def get_campuses(name: Optional[str] = None, address: Optional[str] = None, tool_context: Optional[ToolContext] = None) -> Dict[str, Any]:
     """
-    Trả về danh sách các ngành học, lọc theo campus nếu có
-    
+    Lấy danh sách các cơ sở (campus) của Đại học FPT.
+
+    Sử dụng khi người dùng muốn biết các cơ sở đào tạo hoặc muốn lọc theo tên hay địa chỉ cụ thể.
+
     Args:
-        campus: Tên campus để lọc (tùy chọn)
-        
+        name (Optional[str]): Tên campus cần lọc (nếu có).
+        address (Optional[str]): Địa chỉ campus cần lọc (nếu có).
+        tool_context (Optional[ToolContext]): Ngữ cảnh tool, dùng để ghi trạng thái gọi gần nhất.
+
     Returns:
-        Danh sách các ngành học dưới dạng dictionary
+        Dict[str, Any]: Kết quả bao gồm danh sách campus hoặc thông báo lỗi nếu có.
     """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    majors = [
-        {"major_code": "AI", "name": "Trí tuệ nhân tạo", "campus": "Đà Nẵng"},
-        {"major_code": "CS", "name": "Khoa học máy tính", "campus": "Đà Nẵng"},
-        {"major_code": "SE", "name": "Kỹ thuật phần mềm", "campus": "Đà Nẵng"},
-        {"major_code": "BA", "name": "Kinh doanh số", "campus": "Hà Nội"},
-        {"major_code": "FIN", "name": "Tài chính", "campus": "Hà Nội"},
-        {"major_code": "MKT", "name": "Marketing số", "campus": "Hà Nội"},
-        {"major_code": "DS", "name": "Khoa học dữ liệu", "campus": "Hồ Chí Minh"},
-        {"major_code": "IOT", "name": "Internet vạn vật", "campus": "Hồ Chí Minh"}
-    ]
-    
-    if campus:
-        return [major for major in majors if campus in major["campus"]]
-    return majors
+    if tool_context and hasattr(tool_context, 'state'):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state['current_tool'] = 'get_campuses'
+        # Sử dụng temp: prefix cho biến tạm thời
+        tool_context.state['temp:api_params'] = {'name': name, 'address': address}
+
+    params = {k: v for k, v in {'name': name, 'address': address}.items() if v is not None}
+    return default_client.get("/api/campuses", params)
 
 
-def get_major_detail(major_code: str) -> dict:
+def get_majors_list(campus_code: Optional[str] = None, academic_year: Optional[int] = None, tool_context: Optional[ToolContext] = None) -> Dict[str, Any]:
     """
-    Trả về chi tiết ngành học: môn học, cơ hội việc làm, mô tả
-    
+    Lấy danh sách ngành học của Đại học FPT, có thể lọc theo cơ sở và năm học.
+
+    Dùng khi người dùng hỏi về ngành đào tạo ở campus cụ thể hoặc năm cụ thể.
+
     Args:
-        major_code: Mã ngành học
-        
+        campus_code (Optional[str]): Mã cơ sở đào tạo để lọc.
+        academic_year (Optional[int]): Năm học cần lọc.
+        tool_context (Optional[ToolContext]): Ngữ cảnh tool để lưu state liên quan.
+
     Returns:
-        Thông tin chi tiết về ngành học
+        Dict[str, Any]: Danh sách ngành hoặc thông báo lỗi nếu có.
     """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    major_details = {
-        "AI": {
-            "name": "Trí tuệ nhân tạo",
-            "subjects": ["Machine Learning", "Deep Learning", "Python", "Computer Vision", "NLP"],
-            "career": ["AI Engineer", "Data Scientist", "Machine Learning Engineer"],
-            "description": "Chương trình đào tạo về trí tuệ nhân tạo, tập trung vào các kỹ thuật học máy và ứng dụng AI"
-        },
-        "CS": {
-            "name": "Khoa học máy tính",
-            "subjects": ["Algorithms", "Data Structures", "Operating Systems", "Computer Networks"],
-            "career": ["Software Developer", "System Architect", "Research Scientist"],
-            "description": "Chương trình đào tạo nền tảng về khoa học máy tính và các nguyên lý cơ bản"
-        },
-        "SE": {
-            "name": "Kỹ thuật phần mềm",
-            "subjects": ["Software Engineering", "Project Management", "Web Development", "Mobile Development"],
-            "career": ["Software Engineer", "Project Manager", "DevOps Engineer"],
-            "description": "Chương trình đào tạo về quy trình phát triển phần mềm và kỹ thuật lập trình"
-        },
-        "BA": {
-            "name": "Kinh doanh số",
-            "subjects": ["Digital Business Models", "E-commerce", "Business Analytics", "Digital Marketing"],
-            "career": ["Business Analyst", "Digital Transformation Specialist", "E-commerce Manager"],
-            "description": "Chương trình đào tạo về mô hình kinh doanh số và chuyển đổi số trong doanh nghiệp"
-        },
-        "FIN": {
-            "name": "Tài chính",
-            "subjects": ["Financial Management", "Investment Analysis", "FinTech", "Risk Management"],
-            "career": ["Financial Analyst", "Investment Banker", "FinTech Specialist"],
-            "description": "Chương trình đào tạo về quản lý tài chính và công nghệ tài chính"
-        },
-        "MKT": {
-            "name": "Marketing số",
-            "subjects": ["Digital Marketing", "Social Media Marketing", "SEO/SEM", "Content Marketing"],
-            "career": ["Digital Marketing Manager", "Social Media Specialist", "SEO Expert"],
-            "description": "Chương trình đào tạo về chiến lược marketing trên nền tảng số"
-        },
-        "DS": {
-            "name": "Khoa học dữ liệu",
-            "subjects": ["Data Mining", "Statistical Analysis", "Big Data", "Data Visualization"],
-            "career": ["Data Scientist", "Data Analyst", "Business Intelligence Analyst"],
-            "description": "Chương trình đào tạo về phân tích và xử lý dữ liệu lớn"
-        },
-        "IOT": {
-            "name": "Internet vạn vật",
-            "subjects": ["Embedded Systems", "IoT Protocols", "Sensor Networks", "Edge Computing"],
-            "career": ["IoT Engineer", "Embedded Systems Developer", "Smart City Specialist"],
-            "description": "Chương trình đào tạo về hệ thống kết nối và Internet vạn vật"
+    if tool_context and hasattr(tool_context, 'state'):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state['current_tool'] = 'get_majors_list'
+        tool_context.state['current_campus'] = campus_code
+
+        # Lưu năm học mặc định vào app state nếu được cung cấp
+        if academic_year:
+            tool_context.state['app:default_academic_year'] = academic_year
+
+    params = {k: v for k, v in {'campus_code': campus_code, 'academic_year': academic_year}.items() if v is not None}
+    return default_client.get("/api/majors", params)
+
+
+def store_student_profile(
+    name: str,
+    email: Optional[str] = None,
+    phone: Optional[str] = None,
+    high_school: Optional[str] = None,
+    school_rank: Optional[float] = None,
+    tool_context: Optional[ToolContext] = None
+) -> Dict[str, Any]:
+    """
+    Lưu thông tin hồ sơ sinh viên vào state và đồng bộ với HubSpot nếu có email.
+
+    Args:
+        name (str): Tên sinh viên.
+        email (Optional[str]): Email liên hệ.
+        phone (Optional[str]): Số điện thoại.
+        high_school (Optional[str]): Tên trường THPT.
+        school_rank (Optional[float]): Xếp hạng hoặc điểm trung bình.
+        tool_context (Optional[ToolContext]): Ngữ cảnh tool để lưu vào state.
+
+    Returns:
+        Dict[str, Any]: Trạng thái thao tác (thành công hoặc lỗi).
+    """
+    # Kiểm tra tool_context cơ bản
+    if not tool_context or not hasattr(tool_context, 'state'):
+        return {"status": "error", "message": "Không thể lưu thông tin sinh viên do thiếu tool_context"}
+
+    # Tạo profile với các trường bắt buộc và tùy chọn
+    profile = {"name": name, "updated_at": datetime.now().isoformat()}
+
+    # Thêm các trường tùy chọn nếu có
+    for key, value in {"email": email, "phone": phone, "high_school": high_school, "school_rank": school_rank}.items():
+        if value is not None:
+            profile[key] = value
+
+    # Lưu vào state
+    tool_context.state["user:student_profile"] = profile
+
+    # Nếu không có email, chỉ lưu vào state
+    if not email:
+        return {"status": "success", "message": f"Đã lưu thông tin sinh viên {name} thành công"}
+
+    # Lấy session_id từ invocation_context
+    try:
+        session_id = tool_context._invocation_context.session.id
+    except (AttributeError, TypeError):
+        return {"status": "partial_success", "message": f"Đã lưu thông tin sinh viên {name} vào state nhưng không đồng bộ được với HubSpot"}
+
+    if not session_id:
+        return {"status": "partial_success", "message": f"Đã lưu thông tin sinh viên {name} vào state nhưng không đồng bộ được với HubSpot"}
+
+    # Chuẩn bị dữ liệu HubSpot
+    hubspot_data = {"email": email, "session_id": session_id, "firstname": name}
+    if phone: hubspot_data["phone"] = phone
+    if high_school: hubspot_data["school"] = high_school
+    if school_rank is not None: hubspot_data["school_rank"] = str(school_rank)
+
+    # Gọi API để tạo/cập nhật contact trên HubSpot
+    response = default_client.post("/api/hubspot/contact", hubspot_data)
+
+    # Xử lý kết quả API
+    if response.get("success"):
+        # Lưu ID HubSpot vào profile nếu có
+        if response.get("data", {}).get("id"):
+            profile["hubspot_id"] = response["data"]["id"]
+            tool_context.state["user:student_profile"] = profile
+
+        return {
+            "status": "success",
+            "message": f"Đã lưu thông tin sinh viên {name} thành công và đồng bộ với HubSpot",
+            "hubspot_data": response.get("data")
         }
+
+    # Trả về kết quả từ API nếu không thành công
+    return {
+        "status": "partial_success",
+        "message": f"Đã lưu thông tin sinh viên {name} vào state nhưng không đồng bộ được với HubSpot",
+        "api_response": response
     }
-    
-    if major_code in major_details:
-        return major_details[major_code]
-    return {"error": f"Không tìm thấy thông tin cho mã ngành {major_code}"}
 
 
-def get_tuition_info(major: str, campus: str, year: int) -> dict:
+def get_user_profile(tool_context: Optional[ToolContext] = None) -> Dict[str, Any]:
     """
-    Trả về học phí ngành học theo campus và năm
-    
+    Truy xuất thông tin hồ sơ sinh viên đã lưu trong state từ lần tương tác trước.
+
     Args:
-        major: Mã ngành học
-        campus: Tên campus
-        year: Năm học
-        
+        tool_context (Optional[ToolContext]): Ngữ cảnh tool để truy cập state.
+
     Returns:
-        Thông tin học phí
+        Dict[str, Any]: Hồ sơ sinh viên nếu có, hoặc thông báo lỗi nếu chưa lưu.
     """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    tuition_data = {
-        # Năm 2025
-        2025: {
-            "Đà Nẵng": {
-                "AI": {"tuition_fee": "27.300.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "CS": {"tuition_fee": "25.500.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "SE": {"tuition_fee": "26.800.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
-            },
-            "Hà Nội": {
-                "BA": {"tuition_fee": "29.500.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "FIN": {"tuition_fee": "30.200.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "MKT": {"tuition_fee": "28.900.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
-            },
-            "Hồ Chí Minh": {
-                "DS": {"tuition_fee": "28.500.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "IOT": {"tuition_fee": "27.800.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
+    if not tool_context or not hasattr(tool_context, 'state'):
+        return {"status": "error", "message": "Không thể lấy thông tin người dùng do thiếu tool_context hoặc state không khả dụng"}
+
+    # Truy xuất từ user: prefix
+    profile = tool_context.state.get("user:student_profile")
+    if not profile:
+        return {"status": "error", "message": "Chưa có thông tin người dùng nào được lưu"}
+
+    return {"status": "success", "profile": profile}
+
+
+def get_major_detail(major_code: str, academic_year: Optional[int] = None, tool_context: Optional[ToolContext] = None) -> Dict[str, Any]:
+    """
+    Lấy thông tin chi tiết về một ngành học cụ thể theo mã ngành và năm học (nếu có).
+
+    Dùng khi người dùng hỏi chi tiết ngành hoặc cần điều kiện đầu vào.
+
+    Args:
+        major_code (str): Mã ngành học cần lấy thông tin.
+        academic_year (Optional[int]): Năm học cần lọc.
+        tool_context (Optional[ToolContext]): Ngữ cảnh tool để lưu state liên quan.
+
+    Returns:
+        Dict[str, Any]: Thông tin ngành chi tiết hoặc lỗi nếu có.
+    """
+    if tool_context and hasattr(tool_context, 'state'):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state['current_tool'] = 'get_major_detail'
+        tool_context.state['current_major_code'] = major_code
+
+        # Lưu năm học mặc định vào app state nếu được cung cấp
+        if academic_year:
+            tool_context.state['app:default_academic_year'] = academic_year
+
+    params = {k: v for k, v in {'academic_year': academic_year}.items() if v is not None}
+    return default_client.get(f"/api/majors/{major_code}", params)
+
+
+
+def get_admission_methods(
+    major_code: Optional[str] = None,
+    academic_year: Optional[int] = None,
+    tool_context: Optional[ToolContext] = None
+) -> Dict[str, Any]:
+    """
+    Lấy danh sách các phương thức xét tuyển, bổ sung trường 'scope': 'global' hoặc 'specific'.
+
+    Args:
+        major_id (Optional[int]): ID ngành học để lọc.
+        academic_year (Optional[int]): Năm học để lọc.
+        tool_context (Optional[ToolContext]): ToolContext được ADK truyền vào.
+
+    Returns:
+        Dict[str, Any]: Kết quả có bổ sung scope cho từng phương thức.
+    """
+    if tool_context and hasattr(tool_context, 'state'):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state['current_tool'] = 'get_admission_methods'
+        if major_code:
+            tool_context.state['current_major_code'] = major_code
+
+        # Lưu năm học mặc định vào app state nếu được cung cấp
+        if academic_year:
+            tool_context.state['app:default_academic_year'] = academic_year
+
+    # Build query params (không truyền is_active nếu không cần)
+    params = {
+        k: v for k, v in {
+            'major_code': major_code,
+            'academic_year': academic_year
+        }.items() if v is not None
+    }
+
+    # Gọi API
+    response = default_client.get("/api/admission-methods", params)
+
+    # Nếu không thành công hoặc không có data → return như cũ
+    if not response.get("success") or "data" not in response:
+        return response
+
+    # Bổ sung trường 'scope' cho từng phương thức
+    for method in response["data"]:
+        applications = method.get("applications", [])
+
+        if not applications:
+            method["scope"] = "unspecified"
+        elif all(app.get("major") is None for app in applications):
+            method["scope"] = "global"
+        else:
+            method["scope"] = "specific"
+
+    return response
+
+
+def get_dormitory_by_campus(
+    campus_code: str,
+    tool_context: Optional[ToolContext] = None
+) -> Dict[str, Any]:
+    """
+    Lấy danh sách ký túc xá tại một cơ sở của Đại học FPT.
+
+    Args:
+        campus_code (str): Mã cơ sở như HCM, HN, DN, v.v. (bắt buộc).
+        tool_context (Optional[ToolContext]): Context của tool từ Google ADK.
+
+    Returns:
+        Dict[str, Any]: Kết quả gồm thông tin ký túc xá và campus.
+    """
+    if tool_context and hasattr(tool_context, "state"):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state["current_tool"] = "get_dormitory_by_campus"
+        tool_context.state["current_campus"] = campus_code
+
+    # Gọi API dormitories theo campus_code
+    return default_client.get("/api/dormitories", {"campus_code": campus_code})
+
+
+def get_scholarships_list(
+    campus_code: Optional[str] = None,
+    major_code: Optional[str] = None,
+    tool_context: Optional[ToolContext] = None
+) -> Dict[str, Any]:
+    """
+    Lấy danh sách học bổng Đại học FPT theo campus và/hoặc ngành học.
+
+    Args:
+        campus_code (Optional[str]): Mã cơ sở (HCM, HN, QN...).
+        major_code (Optional[str]): Mã ngành học (7480107...).
+        tool_context (Optional[ToolContext]): Ngữ cảnh làm việc.
+
+    Returns:
+        Dict[str, Any]: Danh sách học bổng đã phân loại scope.
+    """
+    if tool_context and hasattr(tool_context, 'state'):
+        # Sử dụng không có prefix cho thông tin phiên hiện tại
+        tool_context.state['current_tool'] = 'get_scholarships_list'
+        if major_code:
+            tool_context.state['current_major_code'] = major_code
+        if campus_code:
+            tool_context.state['current_campus'] = campus_code
+
+    params = {}
+    if campus_code:
+        params["campus_code"] = campus_code
+    if major_code:
+        params["major_code"] = major_code
+
+    response = default_client.get("/api/scholarships", params=params)
+
+    if not response.get("success") or "data" not in response:
+        return response
+
+    scholarships = []
+    for item in response["data"]:
+        for availability in item.get("availabilities", []):
+            major = availability.get("major")
+            campus = availability.get("campus")
+            academic_year = availability.get("academicYear", {}).get("year")
+
+            if not major and not campus:
+                scope = "global"
+            elif not major and campus:
+                scope = "campus_all_majors"
+            elif major and campus:
+                scope = "major_specific_campus"
+            elif major and not campus:
+                scope = "major_all_campuses"
+            else:
+                scope = "unknown"
+
+            scholarships.append({
+                "name": item.get("name"),
+                "description": item.get("description"),
+                "amount": item.get("amount"),
+                "condition": item.get("condition"),
+                "application_url": item.get("application_url"),
+                "scope": scope,
+                "major_code": major.get("code") if major else None,
+                "campus_code": campus.get("code") if campus else None,
+                "academic_year": academic_year,
+            })
+
+    return {"success": True, "scholarships": scholarships}
+
+
+def debug_invocation_context(tool_context: Optional[ToolContext] = None) -> Dict[str, Any]:
+    """
+    Tool để hiển thị toàn bộ thông tin từ invocation_context.
+
+    Args:
+        tool_context (Optional[ToolContext]): Context của tool.
+
+    Returns:
+        Dict[str, Any]: Toàn bộ thông tin từ invocation_context.
+    """
+    if not tool_context:
+        return {
+            "status": "error",
+            "message": "Missing tool context"
+        }
+
+    print("Tool Context:", tool_context._invocation_context.user_id)
+
+
+    try:
+        # Lấy toàn bộ thông tin từ invocation_context
+        if hasattr(tool_context, 'invocation_context'):
+            context_info = vars(tool_context.invocation_context)
+            # Convert tất cả các giá trị thành string để đảm bảo có thể serialize
+            serializable_info = {
+                key: str(value)
+                for key, value in context_info.items()
             }
-        },
-        # Năm 2024
-        2024: {
-            "Đà Nẵng": {
-                "AI": {"tuition_fee": "25.800.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "CS": {"tuition_fee": "24.200.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "SE": {"tuition_fee": "25.300.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
-            },
-            "Hà Nội": {
-                "BA": {"tuition_fee": "28.000.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "FIN": {"tuition_fee": "28.700.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "MKT": {"tuition_fee": "27.400.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
-            },
-            "Hồ Chí Minh": {
-                "DS": {"tuition_fee": "27.000.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"},
-                "IOT": {"tuition_fee": "26.300.000 VND/kỳ", "note": "Miễn 100% nếu SchoolRank Top 10%", "currency": "VND"}
+
+            print("Invocation Context:", serializable_info)
+
+            return {
+                "status": "success",
+                "invocation_context": serializable_info
             }
+        else:
+            return {
+                "status": "error",
+                "message": "No invocation_context available"
+            }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Error accessing invocation_context: {str(e)}"
         }
-    }
-    
-    if year in tuition_data and campus in tuition_data[year] and major in tuition_data[year][campus]:
-        return tuition_data[year][campus][major]
-    return {"error": f"Không tìm thấy thông tin học phí cho ngành {major} tại campus {campus} năm {year}"}
-
-
-def get_admission_methods(year: int) -> List[str]:
-    """
-    Liệt kê các hình thức xét tuyển theo năm
-    
-    Args:
-        year: Năm xét tuyển
-        
-    Returns:
-        Danh sách các hình thức xét tuyển
-    """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    admission_methods = {
-        2025: ["Học bạ", "Kết quả thi THPT", "Xét tuyển thẳng theo giải thưởng", "SchoolRank"],
-        2024: ["Học bạ", "Kết quả thi THPT", "Xét tuyển thẳng theo giải thưởng"],
-        2023: ["Học bạ", "Kết quả thi THPT"]
-    }
-    
-    if year in admission_methods:
-        return admission_methods[year]
-    return ["Không có thông tin cho năm xét tuyển này"]
-
-
-def get_scholarship_conditions(year: int) -> List[dict]:
-    """
-    Điều kiện nhận học bổng tương ứng học lực/SchoolRank
-    
-    Args:
-        year: Năm học
-        
-    Returns:
-        Danh sách các điều kiện học bổng
-    """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    scholarship_conditions = {
-        2025: [
-            {"type": "100%", "condition": "SchoolRank top 10% + học bạ >= 8.5"},
-            {"type": "70%", "condition": "SchoolRank top 20% + học bạ >= 8.0"},
-            {"type": "50%", "condition": "SchoolRank top 30% + học bạ >= 7.5"},
-            {"type": "30%", "condition": "Học bạ >= 8.0"}
-        ],
-        2024: [
-            {"type": "100%", "condition": "Học bạ >= 9.0"},
-            {"type": "70%", "condition": "Học bạ >= 8.5"},
-            {"type": "50%", "condition": "Học bạ >= 8.0"},
-            {"type": "30%", "condition": "Học bạ >= 7.5"}
-        ]
-    }
-    
-    if year in scholarship_conditions:
-        return scholarship_conditions[year]
-    return [{"error": f"Không có thông tin học bổng cho năm {year}"}]
-
-
-def get_campuses() -> List[dict]:
-    """
-    Danh sách campus (tên, địa chỉ, thông tin liên hệ)
-    
-    Returns:
-        Danh sách các campus
-    """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    campuses = [
-        {
-            "name": "Đà Nẵng",
-            "address": "Khu đô thị FPT, Ngũ Hành Sơn, Đà Nẵng",
-            "phone": "0236.730.2266",
-            "email": "danang@university.edu.vn",
-            "has_dorm": True
-        },
-        {
-            "name": "Hà Nội",
-            "address": "Khu CNC Hòa Lạc, Km29 Đại lộ Thăng Long, Thạch Thất, Hà Nội",
-            "phone": "024.7300.5588",
-            "email": "hanoi@university.edu.vn",
-            "has_dorm": True
-        },
-        {
-            "name": "Hồ Chí Minh",
-            "address": "Lô E2a-7, Đường D1, Khu Công nghệ cao, P. Long Thạnh Mỹ, TP. Thủ Đức",
-            "phone": "028.7300.5588",
-            "email": "hochiminh@university.edu.vn",
-            "has_dorm": True
-        },
-        {
-            "name": "Cần Thơ",
-            "address": "Khu vực 6, P. Phú Thứ, Q. Cái Răng, TP. Cần Thơ",
-            "phone": "0292.730.0068",
-            "email": "cantho@university.edu.vn",
-            "has_dorm": False
-        }
-    ]
-    
-    return campuses
-
-
-def get_calendar_deadlines(year: int) -> dict:
-    """
-    Trả về các mốc thời gian quan trọng: nhận hồ sơ, công bố kết quả, nhập học
-    
-    Args:
-        year: Năm xét tuyển
-        
-    Returns:
-        Các mốc thời gian quan trọng
-    """
-    # Dữ liệu mẫu - trong thực tế sẽ lấy từ cơ sở dữ liệu
-    calendar_deadlines = {
-        2025: {
-            "application_open": "2025-03-01",
-            "application_close": "2025-06-30",
-            "result_day": "2025-07-15",
-            "enrollment_start": "2025-07-20",
-            "enrollment_end": "2025-08-15",
-            "orientation_day": "2025-08-25",
-            "first_day": "2025-09-01"
-        },
-        2024: {
-            "application_open": "2024-03-01",
-            "application_close": "2024-06-30",
-            "result_day": "2024-07-15",
-            "enrollment_start": "2024-07-20",
-            "enrollment_end": "2024-08-15",
-            "orientation_day": "2024-08-25",
-            "first_day": "2024-09-01"
-        }
-    }
-    
-    if year in calendar_deadlines:
-        return calendar_deadlines[year]
-    return {"error": f"Không có thông tin lịch tuyển sinh cho năm {year}"}
-
-
-def get_introduction() -> str:
-    """
-    Trả về thông tin giới thiệu về Đại học FPT
-    
-    Returns:
-        Thông tin giới thiệu về Đại học FPT
-    """
-    return """
-    Đại học FPT (FPT University) là một trong những trường đại học hàng đầu ở Việt Nam, được thành lập vào năm 1992. Đại học FPT có 10 cơ sở giáo dục tại Hà Nội, Đà Nẵng, Hồ Chí Minh, Cần Thơ, Hải Phòng, Đà Lạt, Bà Rịa-Vũng Tàu, và Hà Nam.
-    """
-    
-

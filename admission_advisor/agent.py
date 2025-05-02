@@ -18,20 +18,22 @@ import logging
 import warnings
 from google.adk import Agent
 from .config import Config
-from .prompts import GLOBAL_INSTRUCTION, INSTRUCTION
+from .prompts import INSTRUCTION
 from .shared_libraries.callbacks import (
     rate_limit_callback,
     before_agent,
     before_tool,
 )
-from .tools.tools import (
+from .tools import (
+    get_campuses,
     get_majors_list,
     get_major_detail,
-    get_tuition_info,
+    store_student_profile,
+    get_user_profile,
     get_admission_methods,
-    get_scholarship_conditions,
-    get_campuses,
-    get_calendar_deadlines
+    get_dormitory_by_campus,
+    get_scholarships_list,
+    debug_invocation_context,  
 )
 
 warnings.filterwarnings("ignore", category=UserWarning, module=".*pydantic.*")
@@ -44,19 +46,24 @@ logger = logging.getLogger(__name__)
 
 root_agent = Agent(
     model=configs.agent_settings.model,
-    global_instruction=GLOBAL_INSTRUCTION,
-    instruction=INSTRUCTION,
+    global_instruction=INSTRUCTION,
     name=configs.agent_settings.name,
     tools=[
+        get_campuses,
         get_majors_list,
         get_major_detail,
-        get_tuition_info,
         get_admission_methods,
-        get_scholarship_conditions,
-        get_campuses,
-        get_calendar_deadlines,
+        store_student_profile,
+        get_user_profile,
+        get_dormitory_by_campus,
+        get_scholarships_list,
+        debug_invocation_context,  # Thêm tool mới
     ],
     before_tool_callback=before_tool,
     before_agent_callback=before_agent,
     before_model_callback=rate_limit_callback,
-)
+    generate_content_config={
+        "temperature": 0.3,  
+        "top_p": 0.8,  
+    }
+) 
