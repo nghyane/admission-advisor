@@ -57,7 +57,7 @@ root_agent = Agent(
         get_user_profile,
         get_dormitory_by_campus,
         get_scholarships_list,
-        debug_invocation_context,  # Thêm tool mới
+        debug_invocation_context,  
     ],
     before_tool_callback=before_tool,
     before_agent_callback=before_agent,

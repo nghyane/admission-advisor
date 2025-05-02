@@ -63,7 +63,7 @@ def store_student_profile(
     email: Optional[str] = None,
     phone: Optional[str] = None,
     high_school: Optional[str] = None,
-    school_rank: Optional[float] = None,
+    school_rank: Optional[str] = None,
     tool_context: Optional[ToolContext] = None
 ) -> Dict[str, Any]:
     """
@@ -74,7 +74,7 @@ def store_student_profile(
         email (Optional[str]): Email liên hệ.
         phone (Optional[str]): Số điện thoại.
         high_school (Optional[str]): Tên trường THPT.
-        school_rank (Optional[float]): Xếp hạng hoặc điểm trung bình.
+        school_rank (Optional[str]): Xếp hạng hoặc điểm trung bình.
         tool_context (Optional[ToolContext]): Ngữ cảnh tool để lưu vào state.
 
     Returns:

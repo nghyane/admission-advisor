@@ -19,7 +19,7 @@ app: FastAPI = get_fast_api_app(
     agent_dir=AGENT_DIR,
     session_db_url=configs.SESSION_DB_URL,
     allow_origins=ALLOWED_ORIGINS,
-    web=True  # Set to False in production if you have your own frontend
+    web=True 
 )
 
 if __name__ == "__main__":
